@@ -33,15 +33,10 @@ contract AaveFlash is FlashLoanReceiverBase {
     function executeOperation(
         address[] calldata assets,
         uint256[] calldata amounts,
-        uint256[] calldata premiums,
-        address initiator,
-        bytes calldata params
+        uint256[] calldata premiums
     ) external override returns (bool) {
-        //require(_amounts <= getBalanceInternal(address(this), _reserve), "Invalid balance, was the flashLoan successful?");
-        //flash logic
         swapTokens(amounts[0]);
 
-        // Approve the LendingPool contract allowance to *pull* the owed amount
         ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
         for (uint256 i = 0; i < assets.length; i++) {
             uint256 amountOwing = amounts[i].add(premiums[i]);
@@ -49,7 +44,6 @@ contract AaveFlash is FlashLoanReceiverBase {
             IERC20(assets[i]).approve(address(lendingPool), amountOwing);
         }
         
-        // transferFundsBackToPoolInternal(initiator, totalDebt);
     }
 
 
@@ -71,16 +65,11 @@ contract AaveFlash is FlashLoanReceiverBase {
         return true;
     }
 
-    //call this to start flash loan
-    //takes the addresses of the tokens you want to borrow
-    //and the amounts
     function startFlashLoan(
         address[] calldata assets,
         uint256[] calldata amounts,
         uint256[] calldata modes
     ) public {
-        // uint256[] memory modes = new uint256[](1);
-        // modes[0] = 0;
 
         ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
         lendingPool.flashLoan(
@@ -94,8 +83,6 @@ contract AaveFlash is FlashLoanReceiverBase {
         );
     }
 
-    //this function will execute mid flashloan
-    //swaps the amount of tokens you borrowed from Aave on Uniswap and Sushiswap
     function swapTokens(uint256 amount) public {
         IERC20 dai = IERC20(daiAddress);
         uint256 deadline = block.timestamp + 300;
@@ -125,17 +112,6 @@ contract AaveFlash is FlashLoanReceiverBase {
             deadline
         );
     }
-
-    //this in an optional function to call to initialize how much you want to borrow
-    // function setAmountsToSwap(uint256[] memory _amounts) public {
-    //     amountToTrade = _amounts;
-    // }
-
-    // function approvals() public {
-    //     IERC20 dai = IERC20(daiAddress);
-    //     dai.approve(address(uniswapRouter), amountToTrade[0]);
-    //     dai.approve(address(sushiswapRouter), amountToTrade[0]);
-    // }
 
     function getEstimatedETHForToken(uint256 _tokenAmount, address ERC20Token)
         public
@@ -167,17 +143,6 @@ contract AaveFlash is FlashLoanReceiverBase {
         return path;
     }
 
-    function getAssetPathSushi(address Token)
-        private
-        view
-        returns (address[] memory)
-    {
-        address[] memory path = new address[](2);
-        path[0] = Token;
-        path[1] = sushiswapRouter.WETH();
-
-        return path;
-    }
 
     function getETHPath(address Token) private view returns (address[] memory) {
         address[] memory path = new address[](2);

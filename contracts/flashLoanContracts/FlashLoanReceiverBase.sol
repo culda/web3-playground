@@ -19,4 +19,12 @@ abstract contract FlashLoanReceiverBase is IFlashLoanReceiver {
     ADDRESSES_PROVIDER = provider;
     LENDING_POOL = ILendingPool(provider.getLendingPool());
   }
+
+  function executeOperation(
+    address[] calldata assets,
+    uint256[] calldata amounts,
+    uint256[] calldata premiums,
+    address initiator,
+    bytes calldata params
+  ) external override virtual returns (bool);
 }

@@ -24,7 +24,7 @@ module.exports = async function (deployer, network) {
 
       console.log(lendingPoolAddressesProviderAddress)
 
-      await deployer.deploy(AaveFlash, lendingPoolAddressesProviderAddress)
+    //   await deployer.deploy(AaveFlash, lendingPoolAddressesProviderAddress)
   } catch (e) {
       console.log(`Error in migration: ${e.message}`)
   }
